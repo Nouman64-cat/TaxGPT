@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  chroma_db:
+    image: chromadb/chroma:latest
+    ports:
+      - "8001:8000" # Port 8001 for Chroma
+    volumes:
+      - chroma_data:/chroma/chroma
+    networks:
+      - taxgpt_net
+
+  api_gateway:
+    build: ./api
+    ports:
+      - "8000:8000" # Port 8000 for FastAPI
+    environment:
+      - ORCHESTRATOR_URL=http://orchestrator:8002
+    networks:
+      - taxgpt_net
+    depends_on:
+      - orchestrator
+
+  orchestrator:
+    build: ./orchestrator
+    ports:
+      - "8002:8002"
+    env_file: .env
+    environment:
+      - CHROMA_URL=http://chroma_db:8000
+    networks:
+      - taxgpt_net
+
+  ingestion:
+    build: ./ingestion
+    env_file: .env
+    environment:
+      - CHROMA_URL=http://chroma_db:8000
+    networks:
+      - taxgpt_net
+    profiles:
+      - worker # Runs only when explicitly triggered: docker compose --profile worker up
+
+networks:
+  taxgpt_net:
+    driver: bridge
+
+volumes:
+  chroma_data:
