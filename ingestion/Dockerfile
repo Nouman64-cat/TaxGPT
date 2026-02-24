@@ -15,5 +15,6 @@ COPY . .
 
 # Sets the environment variable for the script
 ENV DATA_DIR=/app/data
+ENV PYTHONUNBUFFERED=1
 
 CMD ["python", "job.py"]

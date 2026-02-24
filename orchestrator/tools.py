@@ -24,6 +24,7 @@ retriever = vector_store.as_retriever(search_kwargs={"k": 5})
 
 def query_neo4j(query: str, llm) -> str:
     """Executes natural language queries against Neo4j using Cypher."""
+    print(f"[NEO4J] Graph schema: {graph.schema}")
     chain = GraphCypherQAChain.from_llm(
         llm=llm, 
         graph=graph, 
@@ -31,9 +32,13 @@ def query_neo4j(query: str, llm) -> str:
         allow_dangerous_requests=True # Required for read-only Cypher generation
     )
     result = chain.invoke({"query": query})
+    print(f"[NEO4J] Raw result: {result}")
     return result.get("result", "No relational data found.")
 
 def query_chroma(query: str) -> str:
     """Retrieves semantic documents from ChromaDB."""
     docs = retriever.invoke(query)
+    print(f"[CHROMA] Found {len(docs)} documents")
+    for i, doc in enumerate(docs):
+        print(f"[CHROMA] Doc {i}: {doc.page_content[:100]}...")
     return "\n".join([doc.page_content for doc in docs])

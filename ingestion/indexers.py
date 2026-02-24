@@ -58,12 +58,29 @@ def ingest_to_neo4j(records: list):
 
 # 3. Vector Ingestion Logic
 def ingest_to_chroma(chunks: list):
-    """Chunks and embeds text into ChromaDB."""
+    """Chunks and embeds text into ChromaDB with adaptive batching."""
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=1024, chunk_overlap=128)
     
     texts = [chunk["text"] for chunk in chunks]
     metadatas = [chunk["metadata"] for chunk in chunks]
     
     split_docs = text_splitter.create_documents(texts, metadatas=metadatas)
-    vector_store.add_documents(split_docs)
-    print(f"Upserted {len(split_docs)} chunks into ChromaDB.")
+    total = len(split_docs)
+    print(f"Total split documents: {total}")
+    
+    batch_size = 100  # Safe default for HTTP payload limits
+    i = 0
+    while i < total:
+        batch = split_docs[i:i + batch_size]
+        try:
+            vector_store.add_documents(batch)
+            print(f"Upserted batch {i} to {i + len(batch)} of {total}")
+            i += len(batch)
+        except Exception as e:
+            if "413" in str(e) or "Payload too large" in str(e):
+                batch_size = max(10, batch_size // 2)
+                print(f"Payload too large, reducing batch size to {batch_size}")
+            else:
+                raise
+    
+    print(f"Upserted {total} total chunks into ChromaDB.")
