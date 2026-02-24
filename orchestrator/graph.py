@@ -1,13 +1,6 @@
-from typing import TypedDict, List
 from langgraph.graph import StateGraph, END
 from nodes import router_node, vector_node, graph_node, synthesizer_node
-
-# 1. Define the State
-class GraphState(TypedDict):
-    query: str
-    route: str          # 'vector', 'graph', or 'hybrid'
-    context: List[str]  # Retrieved documents/data
-    answer: str
+from state import GraphState
 
 # 2. Initialize Graph
 workflow = StateGraph(GraphState)

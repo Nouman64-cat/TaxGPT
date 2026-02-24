@@ -1,12 +1,12 @@
 import os
 from langchain_anthropic import ChatAnthropic
 from langchain_core.prompts import PromptTemplate
-from graph import GraphState
+from state import GraphState
 from tools import query_chroma, query_neo4j # Custom tools to keep nodes DRY
 
 # Initialize Claude
 llm = ChatAnthropic(
-    model="claude-3-5-sonnet-20241022", 
+    model="claude-opus-4-20250514", 
     api_key=os.getenv("ANTHROPIC_API_KEY")
 )
 

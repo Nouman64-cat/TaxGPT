@@ -8,7 +8,7 @@ TaxGPT is composed of four containerized services that communicate over an inter
 
 **API Gateway** - A FastAPI service that acts as the entry point for all client requests. It forwards queries to the orchestrator and returns responses to the user.
 
-**Orchestration Service** - The core intelligence layer powered by LangGraph. It performs stateful routing to decide whether a query needs vector retrieval, graph retrieval, or both, and then synthesizes a final answer using Claude 3.5 Sonnet.
+**Orchestration Service** - The core intelligence layer powered by LangGraph. It performs stateful routing to decide whether a query needs vector retrieval, graph retrieval, or both, and then synthesizes a final answer using Claude Opus 4.
 
 **Worker Service (Ingestion)** - A background worker that processes raw tax documents including IRS Form 1040 PDFs, IRC publications, PowerPoint slides, and CSV data. It chunks, embeds, and stores the processed data into the vector and graph databases.
 
@@ -18,7 +18,7 @@ TaxGPT is composed of four containerized services that communicate over an inter
 
 - Python and FastAPI for the API gateway
 - LangGraph for orchestration and stateful agent routing
-- Claude 3.5 Sonnet as the primary language model
+- Claude Opus 4 as the primary language model
 - ChromaDB for vector storage and retrieval
 - Neo4j Aura for graph storage and relationship queries
 - Docker and Docker Compose for containerization
@@ -29,6 +29,7 @@ TaxGPT is composed of four containerized services that communicate over an inter
 
 - Docker and Docker Compose installed on your machine
 - An Anthropic API key for Claude
+- An OpenAI API key for embeddings
 - A Neo4j Aura instance with connection credentials
 
 ### Environment Setup
@@ -45,16 +46,22 @@ NEO4J_PASSWORD=your_neo4j_password
 
 ### Running the Application
 
-Start the core services
+Step 1 - Start the core services (API Gateway, Orchestrator, and ChromaDB)
 
 ```bash
-docker compose up --build
+docker compose up -d --build
 ```
 
-Run the ingestion worker to process documents
+Step 2 - Run the ingestion worker to process and load documents into the databases. This is a one-time job that extracts data from the source files, embeds text into ChromaDB, and inserts structured records into Neo4j.
 
 ```bash
-docker compose --profile worker up
+docker compose --profile worker up ingestion
+```
+
+Step 3 - Send a query to the API
+
+```bash
+curl -X POST http://localhost:8000/api/v1/chat -H "Content-Type: application/json" -d "{\"query\": \"What is the standard deduction for 2024?\"}"
 ```
 
 ### Service Ports

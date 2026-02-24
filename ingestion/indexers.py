@@ -1,4 +1,5 @@
 import os
+import chromadb
 from neo4j import GraphDatabase
 from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
@@ -10,10 +11,11 @@ neo4j_driver = GraphDatabase.driver(
     auth=(os.getenv("NEO4J_USERNAME"), os.getenv("NEO4J_PASSWORD"))
 )
 
+chroma_client = chromadb.HttpClient(host="chroma_db", port=8000)
 vector_store = Chroma(
     collection_name="tax_knowledge",
     embedding_function=OpenAIEmbeddings(model="text-embedding-3-large"),
-    client_settings={"chroma_api_impl": "rest", "chroma_server_host": "chroma_db", "chroma_server_http_port": "8000"}
+    client=chroma_client
 )
 
 # 2. Graph Ingestion Logic

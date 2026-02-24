@@ -1,6 +1,7 @@
 import os
-from langchain_community.graphs import Neo4jGraph
-from langchain.chains import GraphCypherQAChain
+import chromadb
+from langchain_neo4j import Neo4jGraph
+from langchain_community.chains.graph_qa.cypher import GraphCypherQAChain
 from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
 
@@ -8,16 +9,16 @@ from langchain_openai import OpenAIEmbeddings
 graph = Neo4jGraph(
     url=os.getenv("NEO4J_URI"),
     username=os.getenv("NEO4J_USERNAME"),
-    password=os.getenv("NEO4J_PASSWORD")
+    password=os.getenv("NEO4J_PASSWORD"),
+    database=os.getenv("NEO4J_DATABASE", "neo4j")
 )
 
-# 2. Initialize ChromaDB Connection
+# 2. Initialize ChromaDB Connection (remote container)
+chroma_client = chromadb.HttpClient(host="chroma_db", port=8000)
 vector_store = Chroma(
     collection_name="tax_knowledge",
     embedding_function=OpenAIEmbeddings(model="text-embedding-3-large"),
-    # Point to the local ChromaDB container
-    persist_directory=None, 
-    client_settings={"chroma_api_impl": "rest", "chroma_server_host": "chroma_db", "chroma_server_http_port": "8000"}
+    client=chroma_client
 )
 retriever = vector_store.as_retriever(search_kwargs={"k": 5})
 
