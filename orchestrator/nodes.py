@@ -44,7 +44,9 @@ def graph_node(state: GraphState) -> GraphState:
         print(f"[GRAPH] Retrieved {len(data)} chars: {data[:200]}...")
         return {"context": [data] if data.strip() else []}
     except Exception as e:
+        import traceback
         print(f"[GRAPH] Error: {e}")
+        traceback.print_exc()
         return {"context": []}
 
 def synthesizer_node(state: GraphState) -> GraphState:

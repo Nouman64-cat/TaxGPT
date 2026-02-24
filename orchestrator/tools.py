@@ -1,7 +1,6 @@
 import os
 import chromadb
-from langchain_neo4j import Neo4jGraph
-from langchain_community.chains.graph_qa.cypher import GraphCypherQAChain
+from langchain_neo4j import Neo4jGraph, GraphCypherQAChain
 from langchain_chroma import Chroma
 from langchain_openai import OpenAIEmbeddings
 
